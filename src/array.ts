@@ -23,7 +23,7 @@ export function array<
 					reports?.push({
 						valid: false,
 						issue: `Input isn't array`,
-						received: formatValue(input),
+						received: input,
 					});
 
 					return false;
@@ -37,6 +37,7 @@ export function array<
 							valid: false,
 							issue: `Invalid item`,
 							index,
+							received: item,
 							parts: [itemReport],
 						});
 

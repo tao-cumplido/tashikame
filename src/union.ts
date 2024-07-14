@@ -13,7 +13,7 @@ export function union<UnionSchema extends readonly [Schema, ...Schema[]]>(schema
 			reports?.push({
 				valid: false,
 				issue: `Value mismatch`,
-				received: formatValue(input),
+				received: input,
 			});
 
 			return false;

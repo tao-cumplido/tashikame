@@ -111,7 +111,7 @@ export function tuple<
 					reports?.push({
 						valid: false,
 						issue: `Input isn't array`,
-						received: formatValue(input),
+						received: input,
 					});
 
 					return false;
@@ -148,18 +148,18 @@ export function tuple<
 						let index = 0;
 
 						for (const itemSchema of chunk.schema) {
-							const result = parse.safe(
-								itemSchema,
-								isSpreadable(itemSchema) ?
-									chunk.input.slice(index, index + itemSchema.fixedSize) :
-									chunk.input[index],
-							);
+							const value = isSpreadable(itemSchema) ?
+								chunk.input.slice(index, index + itemSchema.fixedSize) :
+								chunk.input[index];
+
+							const result = parse.safe(itemSchema, value);
 
 							if (!result.valid) {
 								reports?.push({
 									valid: false,
 									issue: `Invalid item`,
 									expected: formatSchema(itemSchema),
+									received: value,
 									parts: [result],
 								});
 
@@ -177,6 +177,7 @@ export function tuple<
 								issue: `Variadic tuple part invalid`,
 								index: variadicInputStart,
 								expected: formatSchema(chunk.schema),
+								received: chunk.input,
 								parts: [result],
 							});
 

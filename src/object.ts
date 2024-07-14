@@ -72,7 +72,7 @@ export function object<
 			reports?.push({
 				valid: false,
 				issue: `Input isn't object`,
-				received: formatValue(input),
+				received: input,
 			});
 
 			return false;
@@ -89,7 +89,7 @@ export function object<
 				valid: false,
 				issue: `Input has additional properties`,
 				received: Object.fromEntries([...additionalKeys].map((key) => {
-					return [key, formatValue(input[key])];
+					return [key, input[key]];
 				})),
 			});
 
@@ -107,6 +107,7 @@ export function object<
 						issue: `Additional property mismatch`,
 						key,
 						expected: formatSchema(additionalSchema),
+						received: value,
 						parts: [valueReport],
 					});
 
@@ -133,6 +134,7 @@ export function object<
 						issue: `Property mismatch`,
 						key,
 						expected: formatSchema(schema),
+						received: value,
 						parts: [valueReport],
 					});
 
