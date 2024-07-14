@@ -107,7 +107,7 @@ export function object<
 						issue: `Additional property mismatch`,
 						key,
 						expected: formatSchema(additionalSchema),
-						received: formatValue(value),
+						parts: [valueReport],
 					});
 
 					return false;
@@ -133,7 +133,7 @@ export function object<
 						issue: `Property mismatch`,
 						key,
 						expected: formatSchema(schema),
-						received: formatValue(value),
+						parts: [valueReport],
 					});
 
 					return false;
