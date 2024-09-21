@@ -14,7 +14,7 @@
 		"skipLibCheck": true,
 	},
 	"include": ["src/**/*.ts"],
-	"exclude": ["src/**/*.test.ts"],
+	"exclude": ["src/**/*.test.ts", "eslint-typegen.d.ts"],
 	"ts-dualist": {
 		"exports": {
 			".": "index.ts",

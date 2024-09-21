@@ -10,5 +10,5 @@ export function pipe<S extends Schema>(schema: S, ...constraints: ReadonlyArray<
 		}
 
 		return constraints.every((check) => check(result.data));
-	}
+	};
 }

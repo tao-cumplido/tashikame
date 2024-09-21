@@ -11,5 +11,5 @@ export function lazy<LazySchema extends Schema>(getter: () => LazySchema): Schem
 		}
 
 		return true;
-	}
+	};
 }

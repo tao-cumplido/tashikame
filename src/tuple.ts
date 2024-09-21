@@ -1,14 +1,14 @@
 import type { Tagged } from "type-fest";
 
+import { formatSchema, parse, registerSchemaName, type Infer, type Schema } from "./core.js";
 import { makeIterable, type IterableSchema } from "./iterable.js";
-import { formatSchema, formatValue, registerSchemaName, parse, type Infer, type Schema } from "./core.js";
 
 const spreadables = new WeakSet();
 
-export type SpreadableSchema<T extends readonly unknown[] = unknown[]> = Tagged<IterableSchema<T>, 'SpreadableSchema'>;
+export type SpreadableSchema<T extends readonly unknown[] = unknown[]> = Tagged<IterableSchema<T>, "SpreadableSchema">;
 
 function isSpreadable(schema: Schema): schema is SpreadableSchema {
-	return typeof schema === 'function' && spreadables.has(schema);
+	return typeof schema === "function" && spreadables.has(schema);
 }
 
 export function spread<SpreadSchema extends IterableSchema<readonly unknown[]>>(schema: SpreadSchema): SpreadableSchema<Infer<SpreadSchema>> {
@@ -18,7 +18,7 @@ export function spread<SpreadSchema extends IterableSchema<readonly unknown[]>>(
 
 	registerSchemaName(
 		`...${formatSchema(schema)}`,
-		spreadableSchema
+		spreadableSchema,
 	);
 
 	// @ts-expect-error
@@ -49,7 +49,7 @@ type ConstraintError<T> = {
 type EnsureSpreadableCount<TupleSchema, Seen = false> =
 	TupleSchema extends readonly [infer Head, ...infer Tail] ?
 		Head extends SpreadableSchema<infer T> ?
-			number extends T['length'] ?
+			number extends T["length"] ?
 				Seen extends true ?
 					ConstraintError<"Only one SpreadableSchema of arbitrary length is allowed."> :
 					EnsureSpreadableCount<Tail, true> :
@@ -59,7 +59,7 @@ type EnsureSpreadableCount<TupleSchema, Seen = false> =
 
 export type TupleSchemaConfig = {
 	readonly inferReadonly?: boolean;
-}
+};
 
 export function tuple<
 	const TupleSchema extends TupleSchemaBase,
@@ -67,7 +67,7 @@ export function tuple<
 >(
 	schema: TupleSchema & EnsureSpreadableCount<TupleSchema>,
 	config?: Config,
-): IterableSchema<InferTuple<TupleSchema, Config['inferReadonly'] extends true ? true : false>> {
+): IterableSchema<InferTuple<TupleSchema, Config["inferReadonly"] extends true ? true : false>> {
 	const {
 		minItems,
 		maxItems,
@@ -83,7 +83,7 @@ export function tuple<
 				data.variadicSchemaIndex = index;
 				data.variadicInputStart = data.minItems;
 			} else {
-				data.minItems += item.fixedSize
+				data.minItems += item.fixedSize;
 			}
 
 			data.maxItems += item.fixedSize;
@@ -103,7 +103,7 @@ export function tuple<
 	const variadicInputEnd = (variadicInputStart - minItems) || Infinity;
 
 	return registerSchemaName(
-		`[${schema.map((item) => formatSchema(item)).join(', ')}]`,
+		`[${schema.map((item) => formatSchema(item)).join(", ")}]`,
 		makeIterable<InferTuple<TupleSchema>>(
 			maxItems,
 			(input, reports): input is any => {
@@ -160,7 +160,7 @@ export function tuple<
 									issue: `Invalid item`,
 									expected: formatSchema(itemSchema),
 									received: value,
-									parts: [result],
+									parts: [ result, ],
 								});
 
 								return false;
@@ -178,7 +178,7 @@ export function tuple<
 								index: variadicInputStart,
 								expected: formatSchema(chunk.schema),
 								received: chunk.input,
-								parts: [result],
+								parts: [ result, ],
 							});
 
 							return false;

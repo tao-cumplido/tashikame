@@ -1,40 +1,40 @@
 export {
 	parse,
-	type SchemaPrimitive,
-	type SchemaPredicate,
-	type Schema,
-	type SchemaValidReport,
-	type SchemaInvalidReport,
-	type SchemaReport,
 	type Infer,
-} from './core.js';
+	type Schema,
+	type SchemaInvalidReport,
+	type SchemaPredicate,
+	type SchemaPrimitive,
+	type SchemaReport,
+	type SchemaValidReport,
+} from "./core.js";
 
 export {
 	object,
 	record,
-	type ObjectSchemaProperty,
 	type AdditionalPropertiesConfig,
 	type ObjectSchemaConfig,
+	type ObjectSchemaProperty,
 	type RecordSchemaConfig,
-} from './object.js';
+} from "./object.js";
 
 export {
 	array,
 	type ArraySchemaConfig,
-} from './array.js';
+} from "./array.js";
 
 export {
 	tuple,
 	type TupleSchemaConfig,
-} from './tuple.js';
+} from "./tuple.js";
 
 export {
 	literal,
 	type Literal,
-} from './literal.js';
+} from "./literal.js";
 
-export { union } from './union.js';
+export { union } from "./union.js";
 
-export { lazy } from './lazy.js';
+export { lazy } from "./lazy.js";
 
-export { pipe } from './pipe.js';
+export { pipe } from "./pipe.js";

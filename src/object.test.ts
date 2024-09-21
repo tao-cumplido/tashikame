@@ -1,89 +1,89 @@
-import assert from 'node:assert/strict';
-import test from 'node:test';
+import assert from "node:assert/strict";
+import test from "node:test";
 
-import { parse } from './core.js';
-import { object } from './object.js';
+import { parse } from "./core.js";
+import { object } from "./object.js";
 
-test.describe('object', () => {
-	test.describe('valid', () => {
-		test('simple shape', () => {
+test.describe("object", () => {
+	test.describe("valid", () => {
+		test("simple shape", () => {
 			const schema = object({
-				a: 'string',
-				b: 'number',
+				a: "string",
+				b: "number",
 			});
 
-			assert(parse.safe(schema, { a: '', b:  0}).valid);
+			assert(parse.safe(schema, { a: "", b:  0, }).valid);
 		});
 
-		test('optional property', () => {
+		test("optional property", () => {
 			const schema = object({
-				a: 'string',
+				a: "string",
 				b: {
-					value: 'number',
+					value: "number",
 					optional: true,
 				},
 			});
 
-			assert(parse.safe(schema, { a: '' }).valid);
+			assert(parse.safe(schema, { a: "", }).valid);
 		});
 
-		test('any additional property', () => {
+		test("any additional property", () => {
 			const schema = object({
-				a: 'number',
+				a: "number",
 			}, {
 				additionalProperties: true,
 			});
 
-			assert(parse.safe(schema, { a: 0, b: '', c: [] }).valid);
+			assert(parse.safe(schema, { a: 0, b: "", c: [], }).valid);
 		});
 
-		test('specific additional property', () => {
+		test("specific additional property", () => {
 			const schema = object({
-				a: 'string',
+				a: "string",
 			}, {
-				additionalProperties: 'number',
+				additionalProperties: "number",
 			});
 
-			assert(parse.safe(schema, { a: '', b: 0 }).valid);
+			assert(parse.safe(schema, { a: "", b: 0, }).valid);
 		});
 	});
 
-	test.describe('invalid', () => {
-		test('simple shape', () => {
+	test.describe("invalid", () => {
+		test("simple shape", () => {
 			const schema = object({
-				a: 'string',
-				b: 'number',
+				a: "string",
+				b: "number",
 			});
 
-			assert(!parse.safe(schema, { a: 0, b:  ''}).valid);
+			assert(!parse.safe(schema, { a: 0, b:  "", }).valid);
 		});
 
-		test('missing property', () => {
+		test("missing property", () => {
 			const schema = object({
-				a: 'string',
-				b: 'number',
+				a: "string",
+				b: "number",
 			});
 
-			assert(!parse.safe(schema, { a: '' }).valid);
+			assert(!parse.safe(schema, { a: "", }).valid);
 		});
 
-		test('excess property', () => {
+		test("excess property", () => {
 			const schema = object({
-				a: 'string',
+				a: "string",
 			});
 
-			assert(!parse.safe(schema, { a: '', b: 0 }).valid);
+			assert(!parse.safe(schema, { a: "", b: 0, }).valid);
 		});
 
-		test('explicit undefined for optional property', () => {
+		test("explicit undefined for optional property", () => {
 			const schema = object({
 				a: {
-					value: 'string',
+					value: "string",
 					optional: true,
 				},
 			});
 
-			assert(!parse.safe(schema, { a: undefined }).valid);
+			assert(!parse.safe(schema, { a: undefined, }).valid);
 		});
 	});
 });

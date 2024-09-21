@@ -1,4 +1,4 @@
-import type { IfAny, IsAny, IsLiteral } from 'type-fest';
+import type { IfAny, IsAny, IsLiteral } from "type-fest";
 
 const primitiveMap = {
 	string: 0 as unknown as string,
@@ -19,16 +19,16 @@ type PrimitiveMap = typeof primitiveMap;
 export type SchemaPrimitive<T> =
 	IsAny<T> extends true ? keyof PrimitiveMap :
 	IsLiteral<T> extends true ? never :
-	unknown extends T ? 'unknown' :
+	unknown extends T ? "unknown" :
 	never extends T ? never :
-	[T] extends [string] ? 'string' :
-	[T] extends [number] ? 'number' :
-	[T] extends [boolean] ? 'boolean' :
-	[T] extends [bigint] ? 'bigint' :
-	[T] extends [symbol] ? 'symbol' :
-	[T] extends [null] ? 'null' :
-	[T] extends [undefined] ? 'undefined' :
-	[T] extends [Function] ? 'function' :
+	[T] extends [string] ? "string" :
+	[T] extends [number] ? "number" :
+	[T] extends [boolean] ? "boolean" :
+	[T] extends [bigint] ? "bigint" :
+	[T] extends [symbol] ? "symbol" :
+	[T] extends [null] ? "null" :
+	[T] extends [undefined] ? "undefined" :
+	[T] extends [Function] ? "function" :
 	never;
 
 export type SchemaValidReport<T = unknown> = {
@@ -41,7 +41,7 @@ export type SchemaInvalidReport = {
 	readonly valid: false;
 	readonly issue: string;
 	readonly parts?: readonly SchemaInvalidReport[];
-}
+};
 
 export type SchemaReport<T = unknown> = SchemaValidReport<T> | SchemaInvalidReport;
 
@@ -62,7 +62,7 @@ export function registerSchemaName<T extends SchemaPredicate>(name: string, sche
 }
 
 export function formatSchema(schema: Schema): string {
-	if (typeof schema === 'function') {
+	if (typeof schema === "function") {
 		return nameRegistry.get(schema) ?? `Unnamed schema`;
 	}
 
@@ -71,11 +71,11 @@ export function formatSchema(schema: Schema): string {
 
 export function formatValue(value: unknown): string {
 	switch (typeof value) {
-		case 'undefined': return 'undefined';
-		case 'string': return `"${value}"`;
-		case 'bigint': return `${value}n`;
-		case 'object': return value?.constructor.name ?? 'null';
-		case 'function': return value.name || 'Function';
+		case "undefined": return "undefined";
+		case "string": return `"${value}"`;
+		case "bigint": return `${value}n`;
+		case "object": return value?.constructor.name ?? "null";
+		case "function": return value.name || "Function";
 	}
 
 	return value!.toString();
@@ -87,7 +87,7 @@ function parseSafe<S extends Schema>(schema: S, input: unknown): SchemaReport<In
 		data: input as Infer<S>,
 	} as const;
 
-	if (typeof schema === 'function') {
+	if (typeof schema === "function") {
 		const reports: SchemaInvalidReport[] = [];
 		const result = schema(input, reports);
 
@@ -96,18 +96,18 @@ function parseSafe<S extends Schema>(schema: S, input: unknown): SchemaReport<In
 			issue: `Type mismatch`,
 			expected: formatSchema(schema),
 			parts: reports,
-		}
+		};
 	}
 
-	if (schema === 'unknown') {
+	if (schema === "unknown") {
 		return validReport;
 	}
 
-	if (schema === 'null') {
+	if (schema === "null") {
 		return input === null ? validReport : {
 			valid: false,
 			issue: `Type mismatch`,
-			expected: 'null',
+			expected: "null",
 			received: formatValue(input),
 		};
 	}
@@ -123,8 +123,8 @@ function parseSafe<S extends Schema>(schema: S, input: unknown): SchemaReport<In
 
 	return {
 		valid: false,
-		issue: `Invalid schema: ${formatSchema(schema)}`
-	}
+		issue: `Invalid schema: ${formatSchema(schema)}`,
+	};
 }
 
 function parsePredicate<S extends Schema>(schema: S, input: unknown): input is Infer<S> {
@@ -137,7 +137,7 @@ export class SchemaError extends Error {
 
 	constructor(schema: Schema, report: SchemaInvalidReport) {
 		super();
-		this.name = 'SchemaError';
+		this.name = "SchemaError";
 		this.schema = schema;
 		this.report = report;
 	}

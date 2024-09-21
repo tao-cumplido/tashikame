@@ -1,12 +1,12 @@
+import { formatSchema, parse, registerSchemaName, type Infer, type Schema } from "./core.js";
 import { makeIterable, type IterableSchema } from "./iterable.js";
-import { formatSchema, formatValue, registerSchemaName, parse, type Infer, type Schema } from "./core.js";
 
 export type ArraySchemaConfig = {
 	readonly inferReadonly?: boolean;
-}
+};
 
 type InferArray<ItemSchema extends Schema, Config extends ArraySchemaConfig> =
-	Config['inferReadonly'] extends true ?
+	Config["inferReadonly"] extends true ?
 	readonly Infer<ItemSchema>[] :
 	Infer<ItemSchema>[];
 
@@ -38,7 +38,7 @@ export function array<
 							issue: `Invalid item`,
 							index,
 							received: item,
-							parts: [itemReport],
+							parts: [ itemReport, ],
 						});
 
 						return false;
