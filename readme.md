@@ -4,8 +4,8 @@
 
 [![NPM Version][npm-image]][npm-url]
 
-[npm-image]: https://img.shields.io/npm/v/@shigen/eslint-plugin.svg
-[npm-url]: https://npmjs.org/package/@shigen/eslint-plugin
+[npm-image]: https://img.shields.io/npm/v/tashikame.svg
+[npm-url]: https://npmjs.org/package/tashikame
 
 Validata data against schemas at runtime and infer TypeScript types from schemas. Lightweight alternative to and inspired by Zod, Valibot and ArkType.
 
