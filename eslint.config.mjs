@@ -67,6 +67,7 @@ export default typegen([
 			"ts/no-unsafe-member-access": [ "error", ],
 			"ts/no-unsafe-declaration-merging": [ "error", ],
 			"ts/no-unsafe-unary-minus": [ "error", ],
+			"ts/consistent-type-imports": [ "error", { fixStyle: "inline-type-imports", }, ],
 		},
 	},
 ]);
