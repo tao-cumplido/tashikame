@@ -1,18 +1,20 @@
 export {
 	parse,
+	ValidationError,
+	type DataInvalidReport,
+	type DataValidReport,
 	type Infer,
 	type Schema,
-	type SchemaInvalidReport,
-	type SchemaPredicate,
-	type SchemaPrimitive,
-	type SchemaReport,
-	type SchemaValidReport,
+	type SchemaFunction,
+	type SchemaKeyword,
+	type ValidationReport,
 } from "./core.js";
 
 export {
 	object,
 	record,
 	type AdditionalPropertiesConfig,
+	type ObjectPropertiesSchema,
 	type ObjectSchemaConfig,
 	type ObjectSchemaProperty,
 	type RecordSchemaConfig,
@@ -37,4 +39,4 @@ export { union } from "./union.js";
 
 export { lazy } from "./lazy.js";
 
-export { pipe } from "./pipe.js";
+export { refine } from "./refine.js";

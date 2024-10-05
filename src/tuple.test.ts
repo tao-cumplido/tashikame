@@ -47,12 +47,15 @@ test.describe("tuple", () => {
 		test("non-array", () => {
 			const report = parse.safe(tuple([]), 0);
 			assert(!report.valid);
-			assert(report.parts?.length === 1);
+			assert(report.expected === "[]");
+			assert(report.received === "0");
 		});
 
 		test("empty input", () => {
 			const report = parse.safe(tuple([ "unknown", ]), []);
 			assert(!report.valid);
+			assert(report.expected === "n = 1");
+			assert(report.received === "n = 0");
 		});
 
 		test("empty schema", () => {
@@ -60,19 +63,18 @@ test.describe("tuple", () => {
 			assert(!report.valid);
 		});
 
+		test("invalid input", () => {
+			const report = parse.safe(tuple([ "string", ]), [ 0, ]);
+			assert(!report.valid);
+			assert(report.expected === "[string]");
+		});
+
 		test("multiple infinites", () => {
 			assert.throws(() =>
-				// @ts-expect-error
+				// @ts-expect-error: types should prevent more than one spread of arbitrary length
 				tuple([ spread(array("number")), spread(array("string")), ]),
 			);
 		});
-
-		// test('item mismatch', () => {
-		// 	const report = parse.safe(array('string'), ['', 0]);
-		// 	assert(!report.valid);
-		// 	assert(report.parts?.length === 1);
-		// 	assert(report.parts[0]?.index === 1);
-		// });
 	});
 
 	test("edges", () => {
@@ -84,12 +86,23 @@ test.describe("tuple", () => {
 		const case4 = parse.safe(schema, [ "", 0, "", ]);
 		const case5 = parse.safe(schema, [ "", null, 0, ]);
 		const case6 = parse.safe(schema, [ "", 0, ]);
+		const case7 = parse.safe(schema, [ "", 0, 0, true, 0, ]);
 
 		assert(case1.valid);
 		assert(case2.valid);
 		assert(case3.valid);
 		assert(case4.valid);
 		assert(case5.valid);
+
 		assert(!case6.valid);
+		assert(case6.expected === "3 <= n <= Infinity");
+		assert(case6.received === "n = 2");
+
+		assert(!case7.valid);
+		assert(case7.expected === "[string, ...Array<number>, number | null, number | string]");
+		assert(typeof case7.received === "object");
+		assert("3" in case7.received);
+		assert(case7.received[3].expected === "number | null");
+		assert(case7.received[3].received === "true");
 	});
 });

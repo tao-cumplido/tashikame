@@ -96,16 +96,6 @@
 				"default": "./dist/commonjs/object.js"
 			}
 		},
-		"./pipe": {
-			"import": {
-				"types": "./dist/module/pipe.d.ts",
-				"default": "./dist/module/pipe.js"
-			},
-			"require": {
-				"types": "./dist/commonjs/pipe.d.ts",
-				"default": "./dist/commonjs/pipe.js"
-			}
-		},
 		"./tuple": {
 			"import": {
 				"types": "./dist/module/tuple.d.ts",
@@ -124,6 +114,16 @@
 			"require": {
 				"types": "./dist/commonjs/union.d.ts",
 				"default": "./dist/commonjs/union.js"
+			}
+		},
+		"./refine": {
+			"import": {
+				"types": "./dist/module/refine.d.ts",
+				"default": "./dist/module/refine.js"
+			},
+			"require": {
+				"types": "./dist/commonjs/refine.d.ts",
+				"default": "./dist/commonjs/refine.js"
 			}
 		}
 	},

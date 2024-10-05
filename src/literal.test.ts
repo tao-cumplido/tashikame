@@ -13,6 +13,8 @@ test.describe("literal", () => {
 	test("invalid", () => {
 		const report = parse.safe(literal(0), 1);
 		assert(!report.valid);
+		assert(report.expected === "Literal<0>");
+		assert(report.received === "1");
 	});
 });
 

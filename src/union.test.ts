@@ -16,7 +16,10 @@ test.describe("union", () => {
 	test.describe("invalid", () => {
 		test("string | number", () => {
 			const schema = union([ "string", "number", ]);
-			assert(!parse.safe(schema, {}).valid);
+			const report = parse.safe(schema, {});
+			assert(!report.valid);
+			assert(report.expected === "string | number");
+			assert(report.received === "Object");
 		});
 	});
 });

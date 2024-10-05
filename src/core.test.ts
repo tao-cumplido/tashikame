@@ -1,10 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { formatSchema, formatValue, parse, registerSchemaName } from "./core.js";
+import { formatSchema, formatValue, parse, registerSchemaName, type ValidationReport } from "./core.js";
 
 test("schema registry", () => {
-	const schema = (input: unknown): input is unknown => true;
+	const schema = (input: unknown): ValidationReport => ({ valid: true, data: input, });
 	registerSchemaName("SchemaRegistryTest", schema);
 	assert.equal(formatSchema(schema), "SchemaRegistryTest");
 });
@@ -118,10 +118,8 @@ test.describe("parse", () => {
 		});
 
 		test("object", () => {
-			// @ts-expect-error
-			const report = parse.safe("object", {});
-			assert(!report.valid);
-			assert.equal(report.issue, "Invalid schema: object");
+			// @ts-expect-error: "object" is not a valid schema keyword
+			assert.throws(() => parse.safe("object", {}));
 		});
 	});
 });

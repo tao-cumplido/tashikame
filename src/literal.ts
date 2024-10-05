@@ -1,19 +1,27 @@
-import { formatValue, registerSchemaName, type SchemaPredicate } from "./core.js";
+import { formatValue, registerSchemaName, type SchemaFunction } from "./core.js";
 
 export type Literal = string | number | bigint | boolean;
 
-export function literal<T extends Literal>(value: T): SchemaPredicate<T> {
-	return registerSchemaName(`Literal<${formatValue(value)}>`, (input, reports): input is T => {
-		const result = input === value;
+export function literal<T extends Literal>(value: T): SchemaFunction<T> {
+	// verify value is valid in non-TS
+	if (![ "string", "number", "bigint", "boolean", ].includes(typeof value)) {
+		throw new TypeError(`Value type must be one of "string", "number", "bigint" or "boolean". Got: "${typeof value}"`);
+	}
 
-		if (!result && reports) {
-			reports.push({
-				valid: false,
-				issue: `Value mismatch`,
-				received: formatValue(input),
-			});
+	const name = `Literal<${formatValue(value)}>`;
+
+	return registerSchemaName(name, (input) => {
+		if (input === value) {
+			return {
+				valid: true,
+				data: value,
+			};
 		}
 
-		return result;
+		return {
+			valid: false,
+			expected: name,
+			received: formatValue(input),
+		};
 	});
 }

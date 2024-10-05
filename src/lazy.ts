@@ -1,15 +1,5 @@
-import { parse, type Infer, type Schema, type SchemaPredicate } from "./core.js";
+import { parse, type Infer, type Schema, type SchemaFunction } from "./core.js";
 
-export function lazy<LazySchema extends Schema>(getter: () => LazySchema): SchemaPredicate<Infer<LazySchema>> {
-	return (input, reports): input is Infer<LazySchema> => {
-		const schema = getter();
-		const result = parse.safe(schema, input);
-
-		if (!result.valid) {
-			reports?.push(result);
-			return false;
-		}
-
-		return true;
-	};
+export function lazy<LazySchema extends Schema>(getSchema: () => LazySchema): SchemaFunction<Infer<LazySchema>> {
+	return (input) => parse.safe(getSchema(), input);
 }

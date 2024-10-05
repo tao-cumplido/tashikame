@@ -1,22 +1,27 @@
-import { formatSchema, parse, registerSchemaName, type Infer, type Schema, type SchemaPredicate } from "./core.js";
+import { formatSchema, formatValue, parse, registerSchemaName, type Infer, type Schema, type SchemaFunction } from "./core.js";
 
-export function union<UnionSchema extends readonly [Schema, ...Schema[]]>(schemas: UnionSchema): SchemaPredicate<{
-	[P in keyof UnionSchema]: Infer<UnionSchema[P]>
-}[number]> {
+export type InferUnion<S extends readonly Schema[]> = {
+	[P in keyof S]: Infer<S[P]>
+}[number];
+
+export function union<UnionSchema extends readonly [Schema, ...Schema[]]>(schemas: UnionSchema): SchemaFunction<InferUnion<UnionSchema>> {
+	const name = schemas.map((schema) => formatSchema(schema)).join(" | ");
+
 	return registerSchemaName(
-		schemas.map((schema) => formatSchema(schema)).join(" | "),
-		(input, reports): input is any => {
+		name,
+		(input) => {
 			if (schemas.some((schema) => parse.is(schema, input))) {
-				return true;
+				return {
+					valid: true,
+					data: input as InferUnion<UnionSchema>,
+				};
 			}
 
-			reports?.push({
+			return {
 				valid: false,
-				issue: `Value mismatch`,
-				received: input,
-			});
-
-			return false;
+				expected: name,
+				received: formatValue(input),
+			};
 		},
 	);
 }

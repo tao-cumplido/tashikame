@@ -1,6 +1,6 @@
 import type { Tagged } from "type-fest";
 
-import { formatSchema, parse, registerSchemaName, type Infer, type Schema } from "./core.js";
+import { formatSchema, formatValue, parse, registerSchemaName, type Infer, type Schema } from "./core.js";
 import { makeIterable, type IterableSchema } from "./iterable.js";
 
 const spreadables = new WeakSet();
@@ -12,7 +12,7 @@ function isSpreadable(schema: Schema): schema is SpreadableSchema {
 }
 
 export function spread<SpreadSchema extends IterableSchema<readonly unknown[]>>(schema: SpreadSchema): SpreadableSchema<Infer<SpreadSchema>> {
-	const spreadableSchema = makeIterable(schema.fixedSize, (input, reports): input is any => schema(input, reports));
+	const spreadableSchema = makeIterable(schema.fixedSize, (input) => schema(input));
 
 	spreadables.add(spreadableSchema);
 
@@ -25,9 +25,9 @@ export function spread<SpreadSchema extends IterableSchema<readonly unknown[]>>(
 	return spreadableSchema;
 }
 
-type TupleSchemaBase = ReadonlyArray<Schema | SpreadableSchema>;
+export type TupleSchemaBase = ReadonlyArray<Schema | SpreadableSchema>;
 
-type InferTuple<
+export type InferTuple<
 	TupleSchema extends TupleSchemaBase,
 	InferReadonly extends boolean = false,
 	Result extends readonly unknown[] = []
@@ -61,6 +61,13 @@ export type TupleSchemaConfig = {
 	readonly inferReadonly?: boolean;
 };
 
+type FixedOrSpreadable = Schema | SpreadableSchema;
+
+type Chunk = {
+	readonly input: readonly unknown[];
+	readonly schema: FixedOrSpreadable | FixedOrSpreadable[];
+};
+
 export function tuple<
 	const TupleSchema extends TupleSchemaBase,
 	const Config extends TupleSchemaConfig
@@ -68,16 +75,17 @@ export function tuple<
 	schema: TupleSchema & EnsureSpreadableCount<TupleSchema>,
 	config?: Config,
 ): IterableSchema<InferTuple<TupleSchema, Config["inferReadonly"] extends true ? true : false>> {
+	// collect some data necessary to check edges of spreadable schemas of arbitrary length (= variadic schema)
 	const {
 		minItems,
-		maxItems,
-		variadicSchemaIndex,
-		variadicInputStart,
+		maxItems, // when minItems !== maxItems, then maxItems === Infinity
+		variadicSchemaIndex, // index of variable schema in the schema list
+		variadicInputStart, // index in the input array where variadic data starts
 	} = schema.reduce((data, item, index) => {
 		if (isSpreadable(item)) {
 			if (item.fixedSize === Infinity) {
 				if (data.variadicSchemaIndex >= 0) {
-					throw new Error(`Only one variadic schema of arbitrary length is allowed`);
+					throw new TypeError(`Only one spreadable schema of arbitrary length is allowed`);
 				}
 
 				data.variadicSchemaIndex = index;
@@ -102,46 +110,67 @@ export function tuple<
 
 	const variadicInputEnd = (variadicInputStart - minItems) || Infinity;
 
-	return registerSchemaName(
-		`[${schema.map((item) => formatSchema(item)).join(", ")}]`,
-		makeIterable<InferTuple<TupleSchema>>(
-			maxItems,
-			(input, reports): input is any => {
-				if (!Array.isArray(input)) {
-					reports?.push({
-						valid: false,
-						issue: `Input isn't array`,
-						received: input,
-					});
+	const name = `[${schema.map((item) => formatSchema(item)).join(", ")}]`;
 
-					return false;
+	return registerSchemaName(
+		name,
+		makeIterable(
+			maxItems,
+			(input) => {
+				if (!Array.isArray(input)) {
+					return {
+						valid: false,
+						description: `Input isn't array`,
+						expected: name,
+						received: formatValue(input),
+					};
 				}
 
 				if (input.length < minItems || input.length > maxItems) {
-					reports?.push({
+					return {
 						valid: false,
-						issue: `Input length mismatch`,
-						expected: `${minItems} <= n <= ${maxItems}`,
-						received: `${input.length}`,
-					});
-
-					return false;
+						description: `Input length mismatch for ${name}`,
+						expected: minItems === maxItems ? `n = ${minItems}` : `${minItems} <= n <= ${maxItems}`,
+						received: `n = ${input.length}`,
+					};
 				}
 
-				const chunks = [
-					variadicInputStart > 0 ? {
-						input: input.slice(0, variadicInputStart),
-						schema: schema.slice(0, variadicSchemaIndex),
-					} : [],
-					variadicSchemaIndex >= 0 ? {
-						input: input.slice(variadicInputStart, variadicInputEnd),
-						schema: schema[variadicSchemaIndex]!,
-					} : [],
-					variadicSchemaIndex >= 0 && variadicInputEnd < Infinity ? {
-						input: input.slice(variadicInputEnd),
-						schema: schema.slice(variadicSchemaIndex + 1),
-					} : [],
-				].flat();
+				const chunks: Chunk[] = [];
+
+				if (variadicInputStart === -1) {
+					// use input as-is whith no variadic schema present
+					chunks.push({
+						input,
+						// @ts-expect-error: EnsureSpreadableCount confuses TS here
+						schema,
+					});
+				} else {
+					if (variadicInputStart > 0) {
+						// add items before variadic part
+						chunks.push({
+							input: input.slice(0, variadicInputStart),
+							schema: schema.slice(0, variadicSchemaIndex),
+						});
+					}
+
+					if (variadicSchemaIndex >= 0) {
+						// add variadic part
+						chunks.push({
+							input: input.slice(variadicInputStart, variadicInputEnd),
+							schema: schema[variadicSchemaIndex]!,
+						});
+					}
+
+					if (variadicSchemaIndex >= 0 && variadicInputEnd < Infinity) {
+						// add items after variadic part
+						chunks.push({
+							input: input.slice(variadicInputEnd),
+							schema: schema.slice(variadicSchemaIndex + 1),
+						});
+					}
+				}
+
+				let inputIndex = 0;
 
 				for (const chunk of chunks) {
 					if (Array.isArray(chunk.schema)) {
@@ -155,38 +184,47 @@ export function tuple<
 							const result = parse.safe(itemSchema, value);
 
 							if (!result.valid) {
-								reports?.push({
+								return {
 									valid: false,
-									issue: `Invalid item`,
-									expected: formatSchema(itemSchema),
-									received: value,
-									parts: [ result, ],
-								});
-
-								return false;
+									description: `Tuple item check failed`,
+									expected: name,
+									received: {
+										[inputIndex]: result,
+									},
+								};
 							}
 
 							index += 1;
+
+							inputIndex += isSpreadable(itemSchema) ? itemSchema.fixedSize : 1;
 						}
 					} else {
 						const result = parse.safe(chunk.schema, chunk.input);
 
 						if (!result.valid) {
-							reports?.push({
+							return {
 								valid: false,
-								issue: `Variadic tuple part invalid`,
-								index: variadicInputStart,
-								expected: formatSchema(chunk.schema),
-								received: chunk.input,
-								parts: [ result, ],
-							});
-
-							return false;
+								description: `Variadic tuple part check failed`,
+								expected: name,
+								received: {
+									[variadicInputStart]: result,
+								},
+							};
 						}
+
+						inputIndex += chunk.input.length;
 					}
 				}
 
-				return true;
+				// make sure that every item in the tuple was checked
+				if (inputIndex !== input.length) {
+					throw new Error(`Unexpected error: possibly some items in the tuple were not verified. Please file an issue.`);
+				}
+
+				return {
+					valid: true,
+					data: input as InferTuple<TupleSchema>,
+				};
 			},
 		),
 	);

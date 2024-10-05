@@ -24,7 +24,7 @@
 			"./lazy": "lazy.ts",
 			"./literal": "literal.ts",
 			"./object": "object.ts",
-			"./pipe": "pipe.ts",
+			"./refine": "refine.ts",
 			"./tuple": "tuple.ts",
 			"./union": "union.ts"
 		}

@@ -12,7 +12,9 @@ test.describe("object", () => {
 				b: "number",
 			});
 
-			assert(parse.safe(schema, { a: "", b:  0, }).valid);
+			const report = parse.safe(schema, { a: "", b:  0, });
+
+			assert(report.valid);
 		});
 
 		test("optional property", () => {
@@ -24,7 +26,9 @@ test.describe("object", () => {
 				},
 			});
 
-			assert(parse.safe(schema, { a: "", }).valid);
+			const report = parse.safe(schema, { a: "", });
+
+			assert(report.valid);
 		});
 
 		test("any additional property", () => {
@@ -34,7 +38,9 @@ test.describe("object", () => {
 				additionalProperties: true,
 			});
 
-			assert(parse.safe(schema, { a: 0, b: "", c: [], }).valid);
+			const report = parse.safe(schema, { a: 0, b: "", c: [], });
+
+			assert(report.valid);
 		});
 
 		test("specific additional property", () => {
@@ -44,18 +50,36 @@ test.describe("object", () => {
 				additionalProperties: "number",
 			});
 
-			assert(parse.safe(schema, { a: "", b: 0, }).valid);
+			const report = parse.safe(schema, { a: "", b: 0, });
+
+			assert(report.valid);
 		});
 	});
 
 	test.describe("invalid", () => {
+		test("no object", () => {
+			const schema = object({ a: "number", });
+			const report = parse.safe(schema, 0);
+
+			assert(!report.valid);
+			assert(report.expected === "{ a: number }");
+			assert(report.received === "0");
+		});
+
 		test("simple shape", () => {
 			const schema = object({
 				a: "string",
 				b: "number",
 			});
 
-			assert(!parse.safe(schema, { a: 0, b:  "", }).valid);
+			const report = parse.safe(schema, { a: 0, b:  "", });
+
+			assert(!report.valid);
+			assert(report.expected === "{ a: string, b: number }");
+			assert(typeof report.received === "object");
+			assert("a" in report.received);
+			assert(report.received.a.expected === "string");
+			assert(report.received.a.received === "0");
 		});
 
 		test("missing property", () => {
@@ -64,7 +88,14 @@ test.describe("object", () => {
 				b: "number",
 			});
 
-			assert(!parse.safe(schema, { a: "", }).valid);
+			const report = parse.safe(schema, { a: "", });
+
+			assert(!report.valid);
+			assert(report.expected === "{ a: string, b: number }");
+			assert(typeof report.received === "object");
+			assert("b" in report.received);
+			assert(report.received.b.expected === "number");
+			assert(report.received.b.received === "undefined");
 		});
 
 		test("excess property", () => {
@@ -72,7 +103,32 @@ test.describe("object", () => {
 				a: "string",
 			});
 
-			assert(!parse.safe(schema, { a: "", b: 0, }).valid);
+			const report = parse.safe(schema, { a: "", b: 0, c: 1, });
+
+			assert(!report.valid);
+			assert(report.expected === "{ a: string }");
+			assert(typeof report.received === "object");
+			assert("b" in report.received);
+			assert(report.received.b.received === "0");
+			assert("c" in report.received);
+			assert(report.received.c.received === "1");
+		});
+
+		test("additional property", () => {
+			const schema = object({
+				a: "number",
+			}, {
+				additionalProperties: "string",
+			});
+
+			const report = parse.safe(schema, { a: 0, b: 0, });
+
+			assert(!report.valid);
+			assert(report.expected === "{ [string]: string, a: number }");
+			assert(typeof report.received === "object");
+			assert("b" in report.received);
+			assert(report.received.b.expected === "string");
+			assert(report.received.b.received === "0");
 		});
 
 		test("explicit undefined for optional property", () => {
@@ -83,7 +139,14 @@ test.describe("object", () => {
 				},
 			});
 
-			assert(!parse.safe(schema, { a: undefined, }).valid);
+			const report = parse.safe(schema, { a: undefined, });
+
+			assert(!report.valid);
+			assert(report.expected === "{ a?: string }");
+			assert(typeof report.received === "object");
+			assert("a" in report.received);
+			assert(report.received.a.expected === "string");
+			assert(report.received.a.received === "undefined");
 		});
 	});
 });

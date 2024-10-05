@@ -21,14 +21,18 @@ test.describe("array", () => {
 		test("non-array", () => {
 			const report = parse.safe(array("unknown"), 0);
 			assert(!report.valid);
-			assert(report.parts?.length === 1);
+			assert(report.expected === "Array<unknown>");
+			assert(report.received === "0");
 		});
 
 		test("item mismatch", () => {
 			const report = parse.safe(array("string"), [ "", 0, ]);
 			assert(!report.valid);
-			assert(report.parts?.length === 1);
-			assert(report.parts[0]?.index === 1);
+			assert(report.expected === "Array<string>");
+			assert(typeof report.received === "object");
+			assert("1" in report.received);
+			assert(report.received[1].expected === "string");
+			assert(report.received[1].received === "0");
 		});
 	});
 });

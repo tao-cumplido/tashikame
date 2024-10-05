@@ -1,11 +1,11 @@
-import { formatSchema, parse, registerSchemaName, type Infer, type Schema } from "./core.js";
+import { formatSchema, formatValue, parse, registerSchemaName, type Infer, type Schema } from "./core.js";
 import { makeIterable, type IterableSchema } from "./iterable.js";
 
 export type ArraySchemaConfig = {
 	readonly inferReadonly?: boolean;
 };
 
-type InferArray<ItemSchema extends Schema, Config extends ArraySchemaConfig> =
+export type InferArray<ItemSchema extends Schema, Config extends ArraySchemaConfig> =
 	Config["inferReadonly"] extends true ?
 	readonly Infer<ItemSchema>[] :
 	Infer<ItemSchema>[];
@@ -14,38 +14,41 @@ export function array<
 	ItemSchema extends Schema,
 	Config extends ArraySchemaConfig
 >(schema: ItemSchema, config?: Config): IterableSchema<InferArray<ItemSchema, Config>> {
+	const name = `Array<${formatSchema(schema)}>`;
+
 	return registerSchemaName(
-		`Array<${formatSchema(schema)}>`,
+		name,
 		makeIterable(
 			Infinity,
-			(input, reports): input is any => {
+			(input) => {
 				if (!Array.isArray(input)) {
-					reports?.push({
+					return {
 						valid: false,
-						issue: `Input isn't array`,
-						received: input,
-					});
-
-					return false;
+						description: `Input isn't array`,
+						expected: name,
+						received: formatValue(input),
+					};
 				}
 
-				return input.every((item, index) => {
-					const itemReport = parse.safe(schema, item);
+				for (const [ index, item, ] of input.entries()) {
+					const report = parse.safe(schema, item);
 
-					if (!itemReport.valid) {
-						reports?.push({
+					if (!report.valid) {
+						return {
 							valid: false,
-							issue: `Invalid item`,
-							index,
-							received: item,
-							parts: [ itemReport, ],
-						});
-
-						return false;
+							description: `Invalid array item`,
+							expected: name,
+							received: {
+								[index]: report,
+							},
+						};
 					}
+				}
 
-					return true;
-				});
+				return {
+					valid: true,
+					data: input,
+				};
 			},
 		),
 	);
