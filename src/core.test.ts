@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
+import { expectTypeOf } from "expect-type";
+
 import { formatSchema, formatValue, parse, registerSchemaName, type ValidationReport } from "./core.js";
 
 test("schema registry", () => {
@@ -52,46 +54,55 @@ test.describe("parse", () => {
 		test("null", () => {
 			const report = parse.safe("null", null);
 			assert(report.valid);
+			expectTypeOf(report.data).toEqualTypeOf<null>();
 		});
 
 		test("undefined", () => {
 			const report = parse.safe("undefined", undefined);
 			assert(report.valid);
+			expectTypeOf(report.data).toEqualTypeOf<undefined>();
 		});
 
 		test("string", () => {
 			const report = parse.safe("string", "");
 			assert(report.valid);
+			expectTypeOf(report.data).toEqualTypeOf<string>();
 		});
 
 		test("number", () => {
 			const report = parse.safe("number", 0);
 			assert(report.valid);
+			expectTypeOf(report.data).toEqualTypeOf<number>();
 		});
 
 		test("bigint", () => {
 			const report = parse.safe("bigint", 0n);
 			assert(report.valid);
+			expectTypeOf(report.data).toEqualTypeOf<bigint>();
 		});
 
 		test("boolean", () => {
 			const report = parse.safe("boolean", true);
 			assert(report.valid);
+			expectTypeOf(report.data).toEqualTypeOf<boolean>();
 		});
 
 		test("symbol", () => {
 			const report = parse.safe("symbol", Symbol.match);
 			assert(report.valid);
+			expectTypeOf(report.data).toEqualTypeOf<symbol>();
 		});
 
 		test("function", () => {
 			const report = parse.safe("function", () => {});
 			assert(report.valid);
+			expectTypeOf(report.data).toEqualTypeOf<(...args: unknown[]) => unknown>();
 		});
 
 		test("unknown", () => {
-			parse("unknown", 0);
-			parse("unknown", {});
+			const report = parse.safe("unknown", 0);
+			assert(report.valid);
+			expectTypeOf(report.data).toEqualTypeOf<unknown>();
 		});
 	});
 

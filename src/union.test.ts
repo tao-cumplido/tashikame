@@ -1,13 +1,16 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { parse } from "./core.js";
+import { expectTypeOf } from "expect-type";
+
+import { parse, type Infer } from "./core.js";
 import { union } from "./union.js";
 
 test.describe("union", () => {
 	test.describe("valid", () => {
 		test("string | number", () => {
 			const schema = union([ "string", "number", ]);
+			expectTypeOf<Infer<typeof schema>>().toEqualTypeOf<string | number>();
 			assert(parse.safe(schema, "").valid);
 			assert(parse.safe(schema, 0).valid);
 		});

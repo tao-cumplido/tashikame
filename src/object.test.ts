@@ -1,8 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { parse } from "./core.js";
-import { object } from "./object.js";
+import { expectTypeOf } from "expect-type";
+
+import { parse, type Infer } from "./core.js";
+import { object, record } from "./object.js";
 
 test.describe("object", () => {
 	test.describe("valid", () => {
@@ -15,6 +17,7 @@ test.describe("object", () => {
 			const report = parse.safe(schema, { a: "", b:  0, });
 
 			assert(report.valid);
+			expectTypeOf(report.data).toEqualTypeOf<{ a: string; b: number; }>;
 		});
 
 		test("optional property", () => {
@@ -29,6 +32,7 @@ test.describe("object", () => {
 			const report = parse.safe(schema, { a: "", });
 
 			assert(report.valid);
+			expectTypeOf(report.data).toEqualTypeOf<{ a: string; b?: number; }>();
 		});
 
 		test("any additional property", () => {
@@ -41,6 +45,7 @@ test.describe("object", () => {
 			const report = parse.safe(schema, { a: 0, b: "", c: [], });
 
 			assert(report.valid);
+			expectTypeOf(report.data).toEqualTypeOf<{ [key: string]: unknown; a: number; }>();
 		});
 
 		test("specific additional property", () => {
@@ -53,7 +58,27 @@ test.describe("object", () => {
 			const report = parse.safe(schema, { a: "", b: 0, });
 
 			assert(report.valid);
+			expectTypeOf(report.data).toMatchTypeOf<Record<string, number> & { a: string; }>();
 		});
+
+		test("infer readonly", () => {
+			const objectSchema = object({
+				a: {
+					value: "number",
+					inferReadonly: true,
+				},
+			}, {
+				additionalProperties: {
+					inferReadonly: true,
+				},
+			});
+
+			expectTypeOf<Infer<typeof objectSchema>>().toEqualTypeOf<{ readonly [key: string]: unknown; readonly a: number; }>();
+		});
+
+		const recordSchema = record("number", { inferReadonly: true, });
+
+		expectTypeOf<Infer<typeof recordSchema>>().toEqualTypeOf<{ readonly [key: string]: number; }>();
 	});
 
 	test.describe("invalid", () => {

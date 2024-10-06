@@ -1,8 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
+import { expectTypeOf } from "expect-type";
+
 import { array } from "./array.js";
-import { parse } from "./core.js";
+import { parse, type Infer } from "./core.js";
 import { spread, tuple } from "./tuple.js";
 import { union } from "./union.js";
 
@@ -11,15 +13,19 @@ test.describe("tuple", () => {
 		test("empty", () => {
 			const report = parse.safe(tuple([]), []);
 			assert(report.valid);
+			expectTypeOf(report.data).toEqualTypeOf<[]>();
 		});
 
 		test("non-empty", () => {
 			const report = parse.safe(tuple([ "unknown", ]), [ 0, ]);
 			assert(report.valid);
+			expectTypeOf(report.data).toEqualTypeOf<[unknown]>();
 		});
 
 		test("single infinite spread", () => {
 			const schema = tuple([ spread(array("number")), ]);
+
+			expectTypeOf<Infer<typeof schema>>().toEqualTypeOf<number[]>();
 
 			assert(parse.safe(schema, []).valid);
 			assert(parse.safe(schema, [ 0, ]).valid);
@@ -27,19 +33,23 @@ test.describe("tuple", () => {
 		});
 
 		test("constant and infinite spread", () => {
-			const schema = tuple([ spread(array("number")), spread(tuple([ "string", "null", ])), ]);
-
-			assert(parse.safe(schema, [ "", null, ]).valid);
-			assert(parse.safe(schema, [ 0, "", null, ]).valid);
-			assert(parse.safe(schema, [ 0, 0, "", null, ]).valid);
-		});
-
-		test("infinite and constant spread", () => {
 			const schema = tuple([ spread(tuple([ "string", "null", ])), spread(array("number")), ]);
+
+			expectTypeOf<Infer<typeof schema>>().toEqualTypeOf<[string, null, ...number[]]>();
 
 			assert(parse.safe(schema, [ "", null, ]).valid);
 			assert(parse.safe(schema, [ "", null, 0, ]).valid);
 			assert(parse.safe(schema, [ "", null, 0, 0, ]).valid);
+		});
+
+		test("infinite and constant spread", () => {
+			const schema = tuple([ spread(array("number")), spread(tuple([ "string", "null", ])), ]);
+
+			expectTypeOf<Infer<typeof schema>>().toEqualTypeOf<[...number[], string, null]>();
+
+			assert(parse.safe(schema, [ "", null, ]).valid);
+			assert(parse.safe(schema, [ 0, "", null, ]).valid);
+			assert(parse.safe(schema, [ 0, 0, "", null, ]).valid);
 		});
 	});
 
@@ -79,6 +89,8 @@ test.describe("tuple", () => {
 
 	test("edges", () => {
 		const schema = tuple([ "string", spread(array("number")), union([ "number", "null", ]), union([ "number", "string", ]), ]);
+
+		expectTypeOf<Infer<typeof schema>>().toEqualTypeOf<[string, ...number[], number | null, number | string]>();
 
 		const case1 = parse.safe(schema, [ "", 0, 0, null, 0, ]);
 		const case2 = parse.safe(schema, [ "", 0, 0, 0, null, 0, ]);

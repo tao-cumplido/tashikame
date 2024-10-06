@@ -1,19 +1,28 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
+import { expectTypeOf } from "expect-type";
+
 import { array } from "./array.js";
-import { parse } from "./core.js";
+import { parse, type Infer } from "./core.js";
 
 test.describe("array", () => {
 	test.describe("valid", () => {
 		test("empty", () => {
 			const report = parse.safe(array("unknown"), []);
 			assert(report.valid);
+			expectTypeOf(report.data).toEqualTypeOf<unknown[]>();
 		});
 
 		test("non-empty", () => {
 			const report = parse.safe(array("unknown"), [ 0, "", {}, ]);
 			assert(report.valid);
+			expectTypeOf(report.data).toEqualTypeOf<unknown[]>();
+		});
+
+		test("infer readonly", () => {
+			const schema = array("unknown", { inferReadonly: true, });
+			expectTypeOf<Infer<typeof schema>>().toEqualTypeOf<readonly unknown[]>();
 		});
 	});
 
