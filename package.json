@@ -7,23 +7,25 @@
 	"bugs": "https://github.com/tao-cumplido/tashikame/issues",
 	"scripts": {
 		"build": "tscd -p tsconfig.lib.json",
-		"test": "tsx --tsconfig tsconfig.test.json --test-reporter spec --watch --test 'src/**/*.test.ts'"
+		"test": "tsx --tsconfig tsconfig.test.json --test-reporter @voxpelli/node-test-pretty-reporter --test 'src/**/*.test.ts'",
+		"test:watch": "tsx --tsconfig tsconfig.test.json --test-reporter @voxpelli/node-test-pretty-reporter --watch --test 'src/**/*.test.ts'"
 	},
 	"dependencies": {
 		"type-fest": "^4.26.1"
 	},
 	"devDependencies": {
-		"@types/node": "22.7.4",
-		"expect-type": "1.0.0",
 		"ts-dualist": "0.1.0-beta.1",
-		"typescript": "5.6.2",
-		"tsx": "4.19.1",
-		"eslint": "9.12.0",
+		"typescript": "5.6.3",
+		"@types/node": "22.8.4",
+		"tsx": "4.19.2",
+		"@voxpelli/node-test-pretty-reporter": "1.1.2",
+		"expect-type": "1.1.0",
+		"eslint": "9.13.0",
 		"eslint-typegen": "0.3.2",
+		"typescript-eslint": "8.12.2",
 		"@stylistic/eslint-plugin": "2.9.0",
 		"@shigen/eslint-plugin": "0.11.0",
-		"eslint-plugin-unused-imports": "4.1.4",
-		"typescript-eslint": "8.8.0"
+		"eslint-plugin-unused-imports": "4.1.4"
 	},
 	"exports": {
 		".": {
