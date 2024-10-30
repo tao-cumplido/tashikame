@@ -1,9 +1,7 @@
+import { makeIterable, type InferReadonlyOption, type IterableSchema } from "./collection.js";
 import { formatSchema, formatValue, parse, registerSchemaName, type Infer, type Schema } from "./core.js";
-import { makeIterable, type IterableSchema } from "./iterable.js";
 
-export type ArraySchemaConfig = {
-	readonly inferReadonly?: boolean;
-};
+export type ArraySchemaConfig = InferReadonlyOption;
 
 export type InferArray<ItemSchema extends Schema, Config extends ArraySchemaConfig> =
 	Config["inferReadonly"] extends true ?

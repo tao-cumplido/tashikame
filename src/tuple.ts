@@ -1,7 +1,7 @@
 import type { Tagged } from "type-fest";
 
+import { makeIterable, type InferReadonlyOption, type IterableSchema } from "./collection.js";
 import { formatSchema, formatValue, parse, registerSchemaName, type Infer, type Schema } from "./core.js";
-import { makeIterable, type IterableSchema } from "./iterable.js";
 
 const spreadables = new WeakSet();
 
@@ -57,9 +57,7 @@ type EnsureSpreadableCount<TupleSchema, Seen = false> =
 		EnsureSpreadableCount<Tail, Seen> :
 	unknown;
 
-export type TupleSchemaConfig = {
-	readonly inferReadonly?: boolean;
-};
+export type TupleSchemaConfig = InferReadonlyOption;
 
 type FixedOrSpreadable = Schema | SpreadableSchema;
 

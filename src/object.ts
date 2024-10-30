@@ -1,11 +1,11 @@
 import type { Simplify } from "type-fest";
 
+import type { InferReadonlyOption } from "./collection.js";
 import { formatSchema, formatValue, parse, registerSchemaName, type Infer, type Schema } from "./core.js";
 
-export type ObjectSchemaProperty = {
+export type ObjectSchemaProperty = InferReadonlyOption & {
 	readonly value: Schema;
 	readonly optional?: boolean;
-	readonly inferReadonly?: boolean;
 };
 
 export type AdditionalPropertiesConfig = Simplify<Partial<Omit<ObjectSchemaProperty, "optional">>>;
@@ -15,6 +15,7 @@ export type ObjectPropertiesSchema = Readonly<Record<string, Schema | ObjectSche
 export type ObjectSchemaConfig = {
 	readonly name?: string;
 	readonly additionalProperties?: boolean | Schema | AdditionalPropertiesConfig;
+	readonly looseOptionals?: boolean;
 };
 
 export type InferObject<S extends ObjectPropertiesSchema, C extends ObjectSchemaConfig> =
