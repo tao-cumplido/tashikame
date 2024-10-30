@@ -20,7 +20,7 @@
 			".": "index.ts",
 			"./core": "core.ts",
 			"./array": "array.ts",
-			"./iterable": "iterable.ts",
+			"./collection": "collection.ts",
 			"./lazy": "lazy.ts",
 			"./literal": "literal.ts",
 			"./object": "object.ts",

@@ -2,6 +2,7 @@ import type { Simplify } from "type-fest";
 
 import type { InferReadonlyOption } from "./collection.js";
 import { formatSchema, formatValue, parse, registerSchemaName, type Infer, type Schema } from "./core.js";
+import { union } from "./union.js";
 
 export type ObjectSchemaProperty = InferReadonlyOption & {
 	readonly value: Schema;
@@ -20,7 +21,7 @@ export type ObjectSchemaConfig = {
 
 export type InferObject<S extends ObjectPropertiesSchema, C extends ObjectSchemaConfig> =
 	{} extends S ? InferAdditionalProperties<C> :
-	Simplify<PropertyMap<S> & InferAdditionalProperties<C>>;
+	Simplify<PropertyMap<S, C["looseOptionals"] extends true ? true : false> & InferAdditionalProperties<C>>;
 
 type TypePick<T, S> = Pick<T, { [P in keyof T]: T[P] extends S ? P : never }[keyof T]>;
 
@@ -31,11 +32,13 @@ type InferMap<T extends ObjectPropertiesSchema> = {
 		never;
 };
 
-type PropertyMap<T extends ObjectPropertiesSchema> =
+type Optional<T, Loose extends boolean> = Loose extends true ? { [P in keyof T]?: T[P] | undefined; } : { [P in keyof T]?: T[P] };
+
+type PropertyMap<T extends ObjectPropertiesSchema, LooseOptionals extends boolean> =
 	Readonly<InferMap<TypePick<T, { inferReadonly: true; optional?: false; }>>> &
-	Partial<Readonly<InferMap<TypePick<T, { optional: true; inferReadonly: true; }>>>> &
+	Optional<Readonly<InferMap<TypePick<T, { optional: true; inferReadonly: true; }>>>, LooseOptionals> &
 	InferMap<TypePick<T, Schema | { value: Schema; optional?: false; inferReadonly?: false; }>> &
-	Partial<InferMap<TypePick<T, { optional: true; inferReadonly?: false; }>>>;
+	Optional<InferMap<TypePick<T, { optional: true; inferReadonly?: false; }>>, LooseOptionals>;
 
 type InferAdditionalProperties<Config extends ObjectSchemaConfig> =
 	Config["additionalProperties"] extends { value: Schema; inferReadonly: true; } ? Readonly<Record<string, Infer<Config["additionalProperties"]["value"]>>> :
@@ -152,7 +155,9 @@ export function object<
 
 			const value = input[key];
 
-			const schema = typeof propertySchema === "object" ? propertySchema.value : propertySchema;
+			const baseSchema = typeof propertySchema === "object" ? propertySchema.value : propertySchema;
+			const isOptional = typeof propertySchema === "object" ? propertySchema.optional : false;
+			const schema = isOptional && config?.looseOptionals ? union([ baseSchema, "undefined", ]) : baseSchema;
 			const valueReport = parse.safe(schema, value);
 
 				if (!valueReport.valid) {

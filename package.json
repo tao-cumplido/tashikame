@@ -58,16 +58,6 @@
 				"default": "./dist/commonjs/array.js"
 			}
 		},
-		"./iterable": {
-			"import": {
-				"types": "./dist/module/iterable.d.ts",
-				"default": "./dist/module/iterable.js"
-			},
-			"require": {
-				"types": "./dist/commonjs/iterable.d.ts",
-				"default": "./dist/commonjs/iterable.js"
-			}
-		},
 		"./lazy": {
 			"import": {
 				"types": "./dist/module/lazy.d.ts",
@@ -126,6 +116,16 @@
 			"require": {
 				"types": "./dist/commonjs/refine.d.ts",
 				"default": "./dist/commonjs/refine.js"
+			}
+		},
+		"./collection": {
+			"import": {
+				"types": "./dist/module/collection.d.ts",
+				"default": "./dist/module/collection.js"
+			},
+			"require": {
+				"types": "./dist/commonjs/collection.d.ts",
+				"default": "./dist/commonjs/collection.js"
 			}
 		}
 	},

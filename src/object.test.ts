@@ -35,6 +35,23 @@ test.describe("object", () => {
 			expectTypeOf(report.data).toEqualTypeOf<{ a: string; b?: number; }>();
 		});
 
+		test("loose optionals", () => {
+			const schema = object({
+				a: "string",
+				b: {
+					value: "number",
+					optional: true,
+				},
+			}, {
+				looseOptionals: true,
+			});
+
+			const report = parse.safe(schema, { a: "", b: undefined, });
+
+			assert(report.valid);
+			expectTypeOf(report.data).toEqualTypeOf<{ a: string; b?: number | undefined; }>();
+		});
+
 		test("any additional property", () => {
 			const schema = object({
 				a: "number",
@@ -74,11 +91,11 @@ test.describe("object", () => {
 			});
 
 			expectTypeOf<Infer<typeof objectSchema>>().toEqualTypeOf<{ readonly [key: string]: unknown; readonly a: number; }>();
+
+			const recordSchema = record("number", { inferReadonly: true, });
+
+			expectTypeOf<Infer<typeof recordSchema>>().toEqualTypeOf<{ readonly [key: string]: number; }>();
 		});
-
-		const recordSchema = record("number", { inferReadonly: true, });
-
-		expectTypeOf<Infer<typeof recordSchema>>().toEqualTypeOf<{ readonly [key: string]: number; }>();
 	});
 
 	test.describe("invalid", () => {
